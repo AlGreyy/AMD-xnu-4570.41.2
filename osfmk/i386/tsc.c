@@ -329,18 +329,32 @@ tsc_init(void)
             did = bitfield(cofvid, 8, 6);
             fid = bitfield(cofvid, 5, 0);
             
-            cpuMult = 0.5 * ((fid + 16) * 10) / did;
-//            cpuMult = (((fid + 16) * 10) / (2^did))/10;
-            cpuFreq = EFI_CPU_Frequency();
+//            if (did == 0) divisor = 2;
+//            else if (did == 1) divisor = 4;
+//            else if (did == 2) divisor = 8;
+//            else if (did == 3) divisor = 16;
+//            else if (did == 4) divisor = 32;
             
-//            if ((cofvid & 0x01) * 1) {
-//                busFreq = (cpuFreq * 2)/((cpuMult*2)+1);
-//            }
-//            else{
-            busFreq = cpuFreq / cpuMult; //(cpuFreq * 10)/cpuMult;
-//            }
-            tscGranularity = cpuMult;
-			break;
+            cpuMult = ((fid + 16) * 10) / (2^did);
+            cpuFreq = EFI_CPU_Frequency();
+//            busFreq = (cpuFreq * 10) / cpuMult;
+//            busFreq = (cpuFreq * 2)/((cpuMult*2)+1);
+            busFreq = 200*Mega;
+            tscGranularity = cpuMult / 10;
+            break;
+            
+//            cpuMult = 0.5 * ((fid + 16) * 10) / did;
+////            cpuMult = (((fid + 16) * 10) / (2^did))/10;
+//            cpuFreq = EFI_CPU_Frequency();
+//
+////            if ((cofvid & 0x01) * 1) {
+////                busFreq = (cpuFreq * 2)/((cpuMult*2)+1);
+////            }
+////            else{
+//            busFreq = cpuFreq / cpuMult; //(cpuFreq * 10)/cpuMult;
+////            }
+//            tscGranularity = cpuMult;
+//            break;
 		}
         case 22: /*** AMD Family 16h ***/
         {

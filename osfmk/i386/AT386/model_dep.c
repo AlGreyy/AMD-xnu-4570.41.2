@@ -126,6 +126,8 @@
 #include <libkern/kernel_mach_header.h>
 #include <libkern/OSKextLibPrivate.h>
 
+#include <chud/chud_xnu.h>
+
 #include <mach/branch_predicates.h>
 
 #if	DEBUG || DEVELOPMENT
@@ -825,9 +827,19 @@ __attribute__((noreturn))
 void
 halt_all_cpus(boolean_t reboot)
 {
+    
+    /* ovof / paulicat: Disable all cores on shutdown to prevent the system hanging */
+    uint32_t ncpus, i;
+    ncpus = chudxnu_logical_cpu_count();
+    for (i = 0; i < ncpus; i++)
+       chudxnu_enable_cpu(i, FALSE);
+    
 	if (reboot) {
 		printf("MACH Reboot\n");
 		PEHaltRestart( kPERestartCPU );
+        asm volatile ("movb $0xfe, %al\n"
+                      "outb %al, $0x64\n"
+                      "hlt\n");
 	} else {
 		printf("CPU halted\n");
 		PEHaltRestart( kPEHaltCPU );

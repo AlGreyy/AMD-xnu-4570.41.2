@@ -329,9 +329,9 @@ cpuid_set_AMDcache_info( i386_cpu_info_t * info_p )
     /* get number of cores in processor */
     /* No HT on AMD so logicals = cores */
     
-    cpuid_fn(0x8000001E, reg);
+//    cpuid_fn(0x8000001E, reg);
 //    uint32_t cores = bitfield32(reg[ebx], 7, 0); // cores
-    uint32_t  logical = bitfield32(reg[ebx], 15, 8) + 1; // 2
+//    uint32_t  logical = bitfield32(reg[ebx], 15, 8) + 1; // 2
 
     cpuid_fn(0x80000008, reg);
     uint32_t cores = bitfield32(reg[ecx], 7, 0) + 1;
@@ -340,7 +340,7 @@ cpuid_set_AMDcache_info( i386_cpu_info_t * info_p )
 //    uint32_t  core_id = bitfield32(reg[ebx], 7, 0);
 //    uint32_t  pkg_id = bitfield32(reg[ecx], 7, 0);
     
-    info_p->cpuid_cores_per_package = cores / logical;
+    info_p->cpuid_cores_per_package = cores;/// logical;
 //    info_p->cpuid_logical_per_package = cores;//cores;
     
     if (info_p->cpuid_cores_per_package  == 0)
@@ -475,12 +475,12 @@ cpuid_set_AMDcache_info( i386_cpu_info_t * info_p )
 //            }
 
             switch (info_p->cpuid_family) {
-//                case 21:
-//                    info_p->cache_size[type] = cpuid_c_size * 1024 * (info_p->cpuid_logical_per_package);
-//                    break;
-                case 23:
-                    info_p->cache_size[type]      = (512 * 1024 * cpuid_c_size)/(info_p->cpuid_cores_per_package);
+                case 21:
+                    info_p->cache_size[type] = cpuid_c_size * 1024 * cache_associativity;
                     break;
+//                case 23:
+//                    info_p->cache_size[type]      = (512 * 1024 * cpuid_c_size)/(info_p->cpuid_cores_per_package);
+//                    break;
                 default:
                      info_p->cache_size[type]      = cpuid_c_size * 1024;
                     break;
@@ -1530,8 +1530,12 @@ cpuid_set_info(void)
     if (IsIntelCPU())
         cpuid_set_cache_info(info_p);
     else {
+        if (info_p->cpuid_family == 23){
         get_amd_cache_info(&cpuid_cpu_info);
-//        cpuid_set_AMDcache_info(info_p);
+        }
+        else{
+        cpuid_set_AMDcache_info(info_p);
+        }
     }
     
     /* Must be invoked after set_generic_info */
